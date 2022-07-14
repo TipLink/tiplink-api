@@ -1,10 +1,15 @@
 {
-  "name": "tiplink",
+  "name": "@tiplink/tiplink",
   "version": "1.0.0",
-  "description": "A barebones TipLink API, for creating empty TipLinks",
-  "main": "index.js",
+  "description": "API for creating and sending TipLinks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint"
   },
   "author": "Aashiq Dheeraj",
   "license": "LicenseRef-LICENSE",
@@ -15,8 +20,14 @@
   },
   "devDependencies": {
     "@types/jest": "^28.1.5",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
+    "eslint": "^8.19.0",
     "jest": "^28.1.3",
     "ts-jest": "^28.0.6",
     "typescript": "^4.7.4"
-  }
+  },
+  "files": [
+    "dist/**/*"
+  ]
 }

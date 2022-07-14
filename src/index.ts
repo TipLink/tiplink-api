@@ -35,7 +35,7 @@ const pwToKeypair = async (pw: Buffer) => {
     return(Keypair.fromSeed(seed));
 }
 
-const createTipLink = async () => {
+export const createTipLink = async () => {
     if (!sodium) sodium = await SodiumPlus.auto();
     const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
     const keypair = await pwToKeypair(b);
@@ -43,7 +43,7 @@ const createTipLink = async () => {
     return {link: link, keypair: keypair};
 };
 
-const linkToKeypair = async (link: string) => {
+export const linkToKeypair = async (link: string) => {
     const slug = link.split("#")[1];
     const pw = Buffer.from(b58decode(slug));
     return await pwToKeypair(pw);
