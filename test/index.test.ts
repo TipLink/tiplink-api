@@ -6,7 +6,6 @@ const linkToKeypair = m.linkToKeypair;
 test("returns valid TipLink", () => {
 	return createTipLink().then((tipLink: any) => {
 		expect(typeof tipLink.link).toBe('string');
-		expect(tipLink.link.length).toBe(38);
 		expect(typeof tipLink.keypair.publicKey.toBase58()).toBe('string');
 	});
 })
