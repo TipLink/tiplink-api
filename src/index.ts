@@ -20,8 +20,8 @@ const kdf = async (fullLength: number, pwShort: Buffer, salt: Buffer) => {
 };
 
 const randBuf = async (l: number) => {
-    if(!sodium) sodium = await SodiumPlus.auto();
-    return sodium.randombytes_buf(l);
+  if(!sodium) sodium = await SodiumPlus.auto();
+  return sodium.randombytes_buf(l);
 };
 
 const kdfz = async (fullLength: number, pwShort: Buffer) => {
@@ -31,22 +31,25 @@ const kdfz = async (fullLength: number, pwShort: Buffer) => {
 };
 
 const pwToKeypair = async (pw: Buffer) => {
-    const seed = await kdfz(sodium.CRYPTO_SIGN_SEEDBYTES, pw);
-    return(Keypair.fromSeed(seed));
+  if (!sodium) sodium = await SodiumPlus.auto();
+  const seed = await kdfz(sodium.CRYPTO_SIGN_SEEDBYTES, pw);
+  return(Keypair.fromSeed(seed));
 }
 
 export const createTipLink = async () => {
-    if (!sodium) sodium = await SodiumPlus.auto();
-    const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
-    const keypair = await pwToKeypair(b);
-    const link = TIPLINK_ORIGIN + TIPLINK_PATH + "#" + b58encode(b);
-    return {link: link, keypair: keypair};
+  if (!sodium) sodium = await SodiumPlus.auto();
+  const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
+  const keypair = await pwToKeypair(b);
+  const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
+  link.hash = b58encode(b);
+  return {link: link.toString(), keypair: keypair};
 };
 
 export const linkToKeypair = async (link: string) => {
-    const slug = link.split("#")[1];
-    const pw = Buffer.from(b58decode(slug));
-    return await pwToKeypair(pw);
+  const url = new URL(link);
+  const slug = url.hash.slice(1);
+  const pw = Buffer.from(b58decode(slug));
+  return await pwToKeypair(pw);
 }
 
 module.exports = {
