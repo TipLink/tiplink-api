@@ -52,6 +52,21 @@ export const linkToKeypair = async (link: string) => {
   return await pwToKeypair(pw);
 }
 
+// TODO should we put these methods on the TipLink type or just have a client
+// just having a client is nice for API key issuance down the road.
+export type TipLink = {
+  url: URL,
+  keypair: Keypair,
+  fromURL: (url: string) => TipLink
+  create: () => TipLink
+}
+
+export type TipLinkClient = {
+  create: () => Promise<TipLink>,
+  urlToTipLink: (url: string) => Promise<TipLink>
+}
+
+
 module.exports = {
     createTipLink: createTipLink,
     linkToKeypair: linkToKeypair
