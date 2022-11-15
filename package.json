@@ -1,5 +1,5 @@
 {
-  "name": "@tiplink/tiplink",
+  "name": "@tiplink/sdk",
   "version": "1.0.0",
   "description": "API for creating and sending TipLinks",
   "main": "dist/index.js",
