@@ -1,7 +1,7 @@
 {
   "name": "@tiplink/sdk",
-  "version": "0.0.1",
-  "description": "API for creating and sending TipLinks",
+  "version": "0.0.2",
+  "description": "SDK for creating and sending TipLinks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -29,5 +29,16 @@
   },
   "files": [
     "dist/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TipLink/tiplink-sdk.git"
+  },
+  "keywords": [
+    "crypto",
+    "solana",
+    "tiplink",
+    "wallet",
+    "airdrop"
   ]
 }
