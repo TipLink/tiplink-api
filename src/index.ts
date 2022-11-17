@@ -36,23 +36,40 @@ const pwToKeypair = async (pw: Buffer) => {
   return(Keypair.fromSeed(seed));
 }
 
-export const createTipLink = async () => {
-  if (!sodium) sodium = await SodiumPlus.auto();
-  const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
-  const keypair = await pwToKeypair(b);
-  const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
-  link.hash = b58encode(b);
-  return {link: link.toString(), keypair: keypair};
-};
+export class Tiplink {
+  url: URL;
+  keypair: Keypair;
 
-export const linkToKeypair = async (link: string) => {
-  const url = new URL(link);
-  const slug = url.hash.slice(1);
-  const pw = Buffer.from(b58decode(slug));
-  return await pwToKeypair(pw);
+  private constructor(url: URL, keypair: Keypair) {
+    this.url = url;
+    this.keypair = keypair;
+  }
+
+  public static async create(): Promise<Tiplink> {
+    if (!sodium) sodium = await SodiumPlus.auto();
+    const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
+    const keypair = await pwToKeypair(b);
+    const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
+    link.hash = b58encode(b);
+    const tiplink = new Tiplink(link, keypair);
+    return tiplink;
+  }
+
+  public static async fromUrl(url: URL): Promise<Tiplink> {
+    const slug = url.hash.slice(1);
+    const pw = Buffer.from(b58decode(slug));
+    const keypair = await pwToKeypair(pw);
+    const tiplink = new Tiplink(url, keypair);
+    return tiplink;
+  }
+
+  public static async fromLink(link: string): Promise<Tiplink> {
+    const url = new URL(link);
+    return this.fromUrl(url);
+  }
+
+  // public getLink(): string {
+    // return this.url.toString();
+  // }
 }
 
-module.exports = {
-    createTipLink: createTipLink,
-    linkToKeypair: linkToKeypair
-};
