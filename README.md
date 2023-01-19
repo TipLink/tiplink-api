@@ -1,4 +1,4 @@
-# TipLink SDK
+# TipLink API
 
 [Full Documentation](https://docs.tiplink.io)
 
@@ -13,11 +13,11 @@ TipLink offers the benefits of decentralization and self-custody without worryin
 
 # Basic Installation instructions
 ```bash
-npm install @tiplink/sdk
+npm install @tiplink/api
 ```
 Import Instructions
 ```js
-import { Tiplink } from '@tiplink/sdk';
+import { Tiplink } from '@tiplink/api';
 ```
 Create a tiplink
 ```js
