@@ -32,7 +32,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/TipLink/tiplink-sdk.git"
+    "url": "https://github.com/TipLink/tiplink-api.git"
   },
   "keywords": [
     "crypto",
