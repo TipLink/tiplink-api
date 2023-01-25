@@ -1,6 +1,6 @@
 {
   "name": "@tiplink/api",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Api for creating and sending TipLinks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
