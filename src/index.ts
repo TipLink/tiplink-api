@@ -36,7 +36,7 @@ const pwToKeypair = async (pw: Buffer) => {
   return(Keypair.fromSeed(seed));
 }
 
-export class Tiplink {
+export class TipLink {
   url: URL;
   keypair: Keypair;
 
@@ -45,25 +45,25 @@ export class Tiplink {
     this.keypair = keypair;
   }
 
-  public static async create(): Promise<Tiplink> {
+  public static async create(): Promise<TipLink> {
     if (!sodium) sodium = await SodiumPlus.auto();
     const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
     const keypair = await pwToKeypair(b);
     const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
     link.hash = b58encode(b);
-    const tiplink = new Tiplink(link, keypair);
+    const tiplink = new TipLink(link, keypair);
     return tiplink;
   }
 
-  public static async fromUrl(url: URL): Promise<Tiplink> {
+  public static async fromUrl(url: URL): Promise<TipLink> {
     const slug = url.hash.slice(1);
     const pw = Buffer.from(b58decode(slug));
     const keypair = await pwToKeypair(pw);
-    const tiplink = new Tiplink(url, keypair);
+    const tiplink = new TipLink(url, keypair);
     return tiplink;
   }
 
-  public static async fromLink(link: string): Promise<Tiplink> {
+  public static async fromLink(link: string): Promise<TipLink> {
     const url = new URL(link);
     return this.fromUrl(url);
   }

@@ -3,7 +3,7 @@
 [Full Documentation](https://docs.tiplink.io)
 
 
-# What is Tiplink?
+# What is TipLink?
 
 TipLink is a lightweight wallet designed to make transferring digital assets as easy as sending a link. Our non-custodial wallet allows you to have complete control of your assets by connecting your Gmail account or Solana wallet.
 
@@ -17,11 +17,11 @@ npm install @tiplink/api
 ```
 Import Instructions
 ```js
-import { Tiplink } from '@tiplink/api';
+import { TipLink } from '@tiplink/api';
 ```
-Create a tiplink
+Create a TipLink
 ```js
-Tiplink.create().then(tiplink => {
+TipLink.create().then(tiplink => {
   console.log("link: ", tiplink.url.toString());
   console.log("publicKey: ", tiplink.keypair.publicKey.toBase58());
   return tiplink;
@@ -29,7 +29,7 @@ Tiplink.create().then(tiplink => {
 ```
 ```js
 const tp = 'https://tiplink.io/i#TIPLINK_HASH';
-Tiplink.fromLink(tp).then(tiplink => {
+TipLink.fromLink(tp).then(tiplink => {
   console.log("converted publicKey: ", tiplink.keypair.publicKey.toBase58());
   return tiplink;
 });
