@@ -1,6 +1,3 @@
-// import { createTipLink, linkToKeypair } from "../src";
-// import { Keypair } from "@solana/web3.js"
-
 import { TipLink } from "../src";
 
 test("returns valid TipLink", () => {

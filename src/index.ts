@@ -1,38 +1,42 @@
 import { Keypair } from '@solana/web3.js';
-import { SodiumPlus } from 'sodium-plus';
+import _sodium from "libsodium-wrappers-sumo";
 import { encode as b58encode, decode as b58decode } from "bs58";
 
 const DEFAULT_TIPLINK_KEYLENGTH = 12;
 const TIPLINK_ORIGIN = "https://tiplink.io";
 const TIPLINK_PATH = "/i"
 
-let sodium: SodiumPlus;
+const getSodium = async () => {
+  await _sodium.ready;
+  return _sodium;
+}
 
-const kdf = async (fullLength: number, pwShort: Buffer, salt: Buffer) => {
-  if (!sodium) sodium = await SodiumPlus.auto();
-  const pwKey = await sodium.crypto_pwhash(
+const kdf = async (fullLength: number, pwShort: Uint8Array, salt: Uint8Array) => {
+  const sodium = await getSodium();
+  return sodium.crypto_pwhash(
     fullLength,
-    pwShort, salt,
-    sodium.CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
-    sodium.CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+    pwShort,
+    salt,
+    sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+    sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+    sodium.crypto_pwhash_ALG_DEFAULT
   );
-  return pwKey.getBuffer();
 };
 
 const randBuf = async (l: number) => {
-  if(!sodium) sodium = await SodiumPlus.auto();
+  const sodium = await getSodium();
   return sodium.randombytes_buf(l);
 };
 
-const kdfz = async (fullLength: number, pwShort: Buffer) => {
-  if (!sodium) sodium = await SodiumPlus.auto();
-  const salt = Buffer.alloc(sodium.CRYPTO_PWHASH_SALTBYTES);
+const kdfz = async (fullLength: number, pwShort: Uint8Array) => {
+  const sodium = await getSodium();
+  const salt = new Uint8Array(sodium.crypto_pwhash_SALTBYTES);
   return await kdf(fullLength, pwShort, salt);
 };
 
-const pwToKeypair = async (pw: Buffer) => {
-  if (!sodium) sodium = await SodiumPlus.auto();
-  const seed = await kdfz(sodium.CRYPTO_SIGN_SEEDBYTES, pw);
+const pwToKeypair = async (pw: Uint8Array) => {
+  const sodium = await getSodium();
+  const seed = await kdfz(sodium.crypto_sign_SEEDBYTES, pw);
   return(Keypair.fromSeed(seed));
 }
 
@@ -46,7 +50,7 @@ export class TipLink {
   }
 
   public static async create(): Promise<TipLink> {
-    if (!sodium) sodium = await SodiumPlus.auto();
+    await getSodium();
     const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
     const keypair = await pwToKeypair(b);
     const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
@@ -57,7 +61,7 @@ export class TipLink {
 
   public static async fromUrl(url: URL): Promise<TipLink> {
     const slug = url.hash.slice(1);
-    const pw = Buffer.from(b58decode(slug));
+    const pw = Uint8Array.from(b58decode(slug));
     const keypair = await pwToKeypair(pw);
     const tiplink = new TipLink(url, keypair);
     return tiplink;
