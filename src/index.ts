@@ -53,8 +53,10 @@ export class TipLink {
     await getSodium();
     const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
     const keypair = await pwToKeypair(b);
-    const link = new URL(TIPLINK_PATH, TIPLINK_ORIGIN);
-    link.hash = b58encode(b);
+    const hash = b58encode(b);
+    const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${hash}`;
+    // can't assign hash as it causes an error in React Native
+    const link = new URL(urlString)
     const tiplink = new TipLink(link, keypair);
     return tiplink;
   }
