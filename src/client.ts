@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 
-import { Tiplink } from './index';
+import { TipLink } from './index';
 import { generateRandomSalt, generateKey, encrypt, encryptPublicKey, decrypt, decryptPrivateKey } from './crypto';
 
 // TODO use real
@@ -13,7 +13,7 @@ const STEP = 100;
 // TODO harmonize constants with main
 const FAUCET_ID_LENGTH = 12;
 
-export class TiplinkClient {
+export class TipLinkClient {
   apiKey: string;
   version: number;
 
@@ -29,8 +29,8 @@ export class TiplinkClient {
     this.campaigns = new CampaignActions({client: this});
   }
 
-  public static async init(apiKey: string, version: number = 1): Promise<TiplinkClient> {
-    const client = new TiplinkClient(apiKey, version);
+  public static async init(apiKey: string, version: number = 1): Promise<TipLinkClient> {
+    const client = new TipLinkClient(apiKey, version);
 
     const apiKeyRes = await client.fetch("api_key");
     client.id = apiKeyRes['account']['id'];
@@ -72,9 +72,9 @@ export class TiplinkClient {
   }
 }
 
-class TiplinkApi {
-  client: TiplinkClient;
-  public constructor(client: TiplinkClient) {
+class TipLinkApi {
+  client: TipLinkClient;
+  public constructor(client: TipLinkClient) {
     this.client = client;
   }
 }
@@ -87,7 +87,7 @@ interface CampaignCreateParams {
 }
 
 interface CampaignActionsConstructor {
-  client: TiplinkClient;
+  client: TipLinkClient;
 }
 
 interface CampaignFindParams {
@@ -110,7 +110,7 @@ interface CampaignAllParams {
   sorting: string;
 }
 
-class CampaignActions extends TiplinkApi {
+class CampaignActions extends TipLinkApi {
   public constructor(params: CampaignActionsConstructor) {
     super(params.client);
   }
@@ -231,7 +231,7 @@ interface GetEntriesParams {
 }
 
 interface CampaignConstructorParams {
-  client: TiplinkClient;
+  client: TipLinkClient;
   id: number;
   name: string;
   description: string;
@@ -240,7 +240,7 @@ interface CampaignConstructorParams {
 
 }
 
-export class Campaign extends TiplinkApi {
+export class Campaign extends TipLinkApi {
   id: number;
   name: string;
   description: string;
@@ -254,7 +254,7 @@ export class Campaign extends TiplinkApi {
 
   public constructor(
     params: CampaignConstructorParams
-    // client: TiplinkClient, id: number, name: string, description: string, imageUrl: string, active: boolean = true
+    // client: TipLinkClient, id: number, name: string, description: string, imageUrl: string, active: boolean = true
   ) {
     super(params.client);
     this.id = params.id;
@@ -265,8 +265,8 @@ export class Campaign extends TiplinkApi {
     this.dispensers = new DispenserActions({client: this.client, campaign: this});
   }
 
-  public async addEntries(tiplinks: Tiplink[]): Promise<boolean> {
-    const tiplinkToCampaignEntry = async (tiplink: Tiplink) => {
+  public async addEntries(tiplinks: TipLink[]): Promise<boolean> {
+    const tiplinkToCampaignEntry = async (tiplink: TipLink) => {
       if(!this.encryptionKey || !this.encryptionSalt) {
         throw "No Encryption Key Set";
       }
@@ -301,8 +301,8 @@ export class Campaign extends TiplinkApi {
     return true;
   }
 
-  public async getEntries(params: GetEntriesParams): Promise<Tiplink[] | null> {
-    const entryToTiplink = async (entry: Record<string, any>): Promise<Tiplink | null> => {
+  public async getEntries(params: GetEntriesParams): Promise<TipLink[] | null> {
+    const entryToTipLink = async (entry: Record<string, any>): Promise<TipLink | null> => {
       if(typeof(this.encryptionKey) == "undefined" || typeof(this.encryptionSalt) == "undefined") {
         console.warn("No Decryption Key: Unable to decrypt entries");
         return null;
@@ -314,16 +314,16 @@ export class Campaign extends TiplinkApi {
           this.encryptionKey,
           this.encryptionSalt,
         );
-        return Tiplink.fromLink(link);
+        return TipLink.fromLink(link);
       }
       return null;
     };
 
     const resEntries = await this.client.fetch(`campaigns/${this.id}/campaign_entries`, params);
 
-    let entries: Tiplink[] = [];
+    let entries: TipLink[] = [];
     while (resEntries.length) {
-      const entry = await Promise.all(resEntries.splice(-1 * STEP).map(entryToTiplink));
+      const entry = await Promise.all(resEntries.splice(-1 * STEP).map(entryToTipLink));
       entries = entries.concat(entry);
     }
     return entries;
@@ -347,7 +347,7 @@ interface CreateDispenserParams {
 
 interface DispenserActionsConstructorParams {
   // TODO harmonize with and implements interface
-  client: TiplinkClient;
+  client: TipLinkClient;
 
   campaign: Campaign;
 }
@@ -372,7 +372,7 @@ interface DispenserAllParams {
   sorting: string;
 }
 
-class DispenserActions extends TiplinkApi {
+class DispenserActions extends TipLinkApi {
   campaign: Campaign;
 
   public constructor(params: DispenserActionsConstructorParams) {
@@ -459,7 +459,7 @@ class DispenserActions extends TiplinkApi {
 }
 
 interface DispenserConstructorParams {
-  client: TiplinkClient;
+  client: TipLinkClient;
   campaign: Campaign;
 
   id: number;
@@ -470,7 +470,7 @@ interface DispenserConstructorParams {
   active: boolean;
 }
 
-export class Dispenser extends TiplinkApi {
+export class Dispenser extends TipLinkApi {
   campaign: Campaign;
   id: number;
 
