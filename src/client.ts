@@ -3,9 +3,10 @@ import { nanoid } from "nanoid";
 import { TipLink } from './index';
 import { generateRandomSalt, generateKey, encrypt, encryptPublicKey, decrypt, decryptPrivateKey } from './crypto';
 
-// TODO use real
-// const URL_BASE = "https://tiplink.io/";
-const URL_BASE = "http://localhost:3000";
+export { decrypt };
+
+const URL_BASE = "https://tiplink.io/";
+// const URL_BASE = "http://localhost:3000";
 const API_URL_BASE = `${URL_BASE}/api`;
 
 const STEP = 100;
@@ -326,6 +327,7 @@ export class Campaign extends TipLinkApi {
       const entry = await Promise.all(resEntries.splice(-1 * STEP).map(entryToTipLink));
       entries = entries.concat(entry);
     }
+    // TODO include analytics? and id give whole entry object?
     return entries;
   }
   public async getAnalytics(): Promise<Record<string, any>> {
