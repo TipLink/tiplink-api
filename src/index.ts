@@ -79,3 +79,5 @@ export class TipLink {
   // }
 }
 
+import { TipLinkClient } from './client';
+export { TipLinkClient };
