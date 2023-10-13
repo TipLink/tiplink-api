@@ -138,10 +138,8 @@ class CampaignActions extends TipLinkApi {
 
     const campaign = new Campaign({client: this.client, id: res['id'], name: res['name'], description: res['description'], imageUrl: res['image_url'], active: res['active'],});
 
-    console.log(campaign);
     if (typeof(this.client.publicKey) == "undefined") {
       // TODO should we handle this differently
-      console.log(typeof(this.client.publicKey));
       throw "Unable to do server handshake with encryption key";
     } else {
       const encryptedCampaignKey = await encryptPublicKey(
