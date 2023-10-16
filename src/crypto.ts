@@ -5,7 +5,6 @@ import nacl from "tweetnacl";
 import { decodeUTF8, encodeUTF8 } from "tweetnacl-util";
 export const DEFAULT_TIPLINK_KEYLENGTH = 12;
 
-// @ts-ignore
 import { webcrypto } from "crypto";
 const crypto = webcrypto;
 import bs58 from "bs58";
@@ -24,8 +23,6 @@ function stringToArrayBuffer(str: string) {
 }
 
 // Crypto encrypting links in db and apikeys
-
-const ITERATIONS = 10000;
 const KEY_LENGTH_BYTES = 256;
 const SALT_LENGTH_BYTES = 64;
 const MODULUS_LENGTH = 4096;
@@ -278,32 +275,32 @@ export const decryptMessage = async (
 
 // encrypted using symmetric key encryption generated from a Diffie-Hellman key exchange
 // https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange'
-export const encryptDataUsingDH = (
-  dataToEncrypt: { [key: string]: any },
-  recipientEncryptionPubKey: Uint8Array | string // bs58 encoded string or nacl box public key (not solana keypair)
-) => {
-  // nacl box keypair (not solana wallet keypair)
-  const keypair = nacl.box.keyPair();
-  const nonce = nacl.randomBytes(24);
-  const dataBuffer = Buffer.from(JSON.stringify(dataToEncrypt));
-  const recipientPubKey =
-    typeof recipientEncryptionPubKey === "string"
-      ? bs58.decode(recipientEncryptionPubKey)
-      : recipientEncryptionPubKey;
-  const encryptedData = nacl.box(
-    dataBuffer,
-    nonce,
-    recipientPubKey,
-    keypair.secretKey
-  );
-  return {
-    nonceUint8Arr: nonce,
-    nonceBs58: bs58.encode(nonce),
-    encryptedDataUint8Arr: encryptedData,
-    encryptedDataBs58: bs58.encode(encryptedData),
-    encryptionKeypairToHold: keypair,
-  };
-};
+// export const encryptDataUsingDH = (
+//   dataToEncrypt: { [key: string]: any },
+//   recipientEncryptionPubKey: Uint8Array | string // bs58 encoded string or nacl box public key (not solana keypair)
+// ) => {
+//   // nacl box keypair (not solana wallet keypair)
+//   const keypair = nacl.box.keyPair();
+//   const nonce = nacl.randomBytes(24);
+//   const dataBuffer = Buffer.from(JSON.stringify(dataToEncrypt));
+//   const recipientPubKey =
+//     typeof recipientEncryptionPubKey === "string"
+//       ? bs58.decode(recipientEncryptionPubKey)
+//       : recipientEncryptionPubKey;
+//   const encryptedData = nacl.box(
+//     dataBuffer,
+//     nonce,
+//     recipientPubKey,
+//     keypair.secretKey
+//   );
+//   return {
+//     nonceUint8Arr: nonce,
+//     nonceBs58: bs58.encode(nonce),
+//     encryptedDataUint8Arr: encryptedData,
+//     encryptedDataBs58: bs58.encode(encryptedData),
+//     encryptionKeypairToHold: keypair,
+//   };
+// };
 
 export const decryptDataUsingDH = (
   dataToDecrypt: Uint8Array | string, // string must be bs58 encoded

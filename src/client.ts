@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 
 import { TipLink } from './index';
-import { generateRandomSalt, generateKey, encrypt, encryptPublicKey, decrypt, decryptPrivateKey } from './crypto';
+import { generateRandomSalt, generateKey, encrypt, encryptPublicKey, decrypt } from './crypto';
 
 export { decrypt };
 
@@ -13,6 +13,7 @@ const STEP = 100;
 
 // TODO harmonize constants with main
 const FAUCET_ID_LENGTH = 12;
+type ArgT = string | number | boolean | string[] | number[];
 
 export class TipLinkClient {
   apiKey: string;
@@ -24,13 +25,13 @@ export class TipLinkClient {
 
   campaigns: CampaignActions;
 
-  public constructor(apiKey: string, version: number = 1) {
+  public constructor(apiKey: string, version=1) {
     this.apiKey = apiKey;
     this.version = version;
     this.campaigns = new CampaignActions({client: this});
   }
 
-  public static async init(apiKey: string, version: number = 1): Promise<TipLinkClient> {
+  public static async init(apiKey: string, version=1): Promise<TipLinkClient> {
     const client = new TipLinkClient(apiKey, version);
 
     const apiKeyRes = await client.fetch("api_key");
@@ -41,12 +42,12 @@ export class TipLinkClient {
   }
 
   // TODO type return?
-  public async fetch(endpoint: string, args: Record<string, any> | null = null, body: Record<string, any> | null = null, verb: string="GET"): Promise<any> {
+  public async fetch(endpoint: string, args: Record<string, ArgT> | null = null, body: Record<string, unknown> | Array<Record<string, unknown> > | null = null, verb="GET") {
     const url = new URL(endpoint, `${API_URL_BASE}/v${this.version}/`);
 
     if (args !== null) {
       Object.entries(args).forEach(([key, value]) => {
-        url.searchParams.append(key, value);
+        url.searchParams.append(key, value as string);
       });
     }
 
@@ -56,7 +57,7 @@ export class TipLinkClient {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-    } as Record<string, any>;
+    } as Record<string, unknown>;
 
     if (body !== null) {
       params.body = JSON.stringify(body);
@@ -66,10 +67,10 @@ export class TipLinkClient {
       const result = await fetch(url.toString(), params);
       return await result.json();
     } catch (err) {
+      console.error(err);
       // TODO how should we handle errors
       throw err;
     }
-    return null;
   }
 }
 
@@ -99,6 +100,15 @@ interface CampaignFindParams {
   active: boolean; // default true
 }
 
+interface CampaignResult {
+  id: number;
+  name: string;
+  description: string;
+  image_url: string;
+  active: boolean;
+  encryption_salt: string;
+}
+
 interface CampaignAllParams {
   id: number;
   name: string;
@@ -109,6 +119,41 @@ interface CampaignAllParams {
   limit: number;
   offset: number;
   sorting: string;
+}
+
+interface CampaignEntry {
+  public_key: string;
+  encrypted_link: string;
+  funding_txn: string;
+}
+
+interface AnalyticsSummary {
+  event_type_counts: number;
+  total: number;
+  faucets_info: number;
+  campaign_info: number;
+}
+
+enum Rate {
+  DAILY = 0,
+  WEEKLY,
+  MONTHLY,
+  YEARLY,
+  FOREVER,
+  MILLISECOND
+}
+
+interface RateLimit {
+  id: number;
+  rate: Rate;
+}
+
+interface Faucet {
+  id: number;
+  url_slug: string;
+  active: boolean;
+  fingerprint: boolean;
+  recaptcha: boolean;
 }
 
 class CampaignActions extends TipLinkApi {
@@ -154,7 +199,7 @@ class CampaignActions extends TipLinkApi {
         encrypted_campaign_key: encryptedCampaignKey,
       };
 
-      const joinResult = await this.client.fetch(`campaigns/${campaign.id}/campaign_account_joins`, null, keyData, "POST");
+      await this.client.fetch(`campaigns/${campaign.id}/campaign_account_joins`, null, keyData, "POST");
 
       if(salt !== res['encryption_salt']) {
         console.error("encryption salt mismatch");
@@ -174,7 +219,7 @@ class CampaignActions extends TipLinkApi {
       sorting: "-created_at",
     }
 
-    const res = (await this.client.fetch("campaigns", findParams, null, "GET") as Record<string, any>[])[0];
+    const res = (await this.client.fetch("campaigns", findParams, null, "GET") as CampaignResult[])[0];
 
     const campaign = new Campaign({client: this.client, id: res['id'], name: res['name'], description: res['description'], imageUrl: res['image_url'], active: res['active'],});
 
@@ -197,7 +242,7 @@ class CampaignActions extends TipLinkApi {
       ...params,
     }
 
-    const campaignResults = (await this.client.fetch("campaigns", filterParams, null, "GET") as Record<string, any>[]);
+    const campaignResults = (await this.client.fetch("campaigns", filterParams, null, "GET") as CampaignResult[]);
 
     const campaigns = campaignResults.map((res) => {
       const campaign = new Campaign({client: this.client, id: res['id'], name: res['name'], description: res['description'], imageUrl: res['image_url'], active: res['active'],});
@@ -286,22 +331,22 @@ export class Campaign extends TipLinkApi {
       const entries = await Promise.all(
         tiplinks.splice(-1 * STEP).map(tiplinkToCampaignEntry)
       );
-      const resEntries = await this.client.fetch(`campaigns/${this.id}/campaign_entries`, null, entries, "POST");
+      await this.client.fetch(`campaigns/${this.id}/campaign_entries`, null, entries, "POST");
 
 
-      const analytics = entries.map((entry: Record<string, any>) => {
+      const analytics = entries.map((entry: CampaignEntry) => {
         return {
           event: "CREATED",
           public_key: entry.public_key,
         };
       })
-      const resAnalytics = await this.client.fetch("analytics", null, analytics, "POST");
+      await this.client.fetch("analytics", null, analytics, "POST");
     }
     return true;
   }
 
   public async getEntries(params: GetEntriesParams): Promise<TipLink[] | null> {
-    const entryToTipLink = async (entry: Record<string, any>): Promise<TipLink | null> => {
+    const entryToTipLink = async (entry: CampaignEntry): Promise<TipLink | null> => {
       if(typeof(this.encryptionKey) == "undefined" || typeof(this.encryptionSalt) == "undefined") {
         console.warn("No Decryption Key: Unable to decrypt entries");
         return null;
@@ -318,7 +363,7 @@ export class Campaign extends TipLinkApi {
       return null;
     };
 
-    const resEntries = await this.client.fetch(`campaigns/${this.id}/campaign_entries`, params);
+    const resEntries = await this.client.fetch(`campaigns/${this.id}/campaign_entries`, params as unknown as Record<string, ArgT>);
 
     let entries: TipLink[] = [];
     while (resEntries.length) {
@@ -328,7 +373,7 @@ export class Campaign extends TipLinkApi {
     // TODO include analytics? and id give whole entry object?
     return entries;
   }
-  public async getAnalytics(): Promise<Record<string, any>> {
+  public async getAnalytics(): Promise<AnalyticsSummary> {
     // TODO clean up response here and type
     const analyticsRes = await this.client.fetch(`campaigns/${this.id}/analytics_summary`);
     return analyticsRes;
@@ -390,7 +435,7 @@ class DispenserActions extends TipLinkApi {
 
     const rateLimits = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits`);
 
-    await Promise.all(rateLimits.map(async (rateLimit: Record<string, any>) => {
+    await Promise.all(rateLimits.map(async (rateLimit: RateLimit) => {
       const deleteRateLimitRes = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits/${rateLimit['id']}`);
       return deleteRateLimitRes;
     }));
@@ -402,7 +447,7 @@ class DispenserActions extends TipLinkApi {
         claims: 1,
         // "rate_type": "user",
       };
-      const rateLimit = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits`, null, rateLimitData, "POST");
+      await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits`, null, rateLimitData, "POST");
     }
 
     const faucetData = {
@@ -421,7 +466,7 @@ class DispenserActions extends TipLinkApi {
       excluded_campaign_entry_ids: excludedEntryIds,
     };
 
-    const faucetEntries = await this.client.fetch(`campaigns/${this.campaign.id}/faucet/${faucet.id}/faucet_entries`, null, faucetEntryData, "POST");
+    await this.client.fetch(`campaigns/${this.campaign.id}/faucet/${faucet.id}/faucet_entries`, null, faucetEntryData, "POST");
 
     return dispenser;
   }
@@ -433,7 +478,7 @@ class DispenserActions extends TipLinkApi {
       sorting: "-created_at",
     }
 
-    const faucet = (await this.client.fetch(`campaigns/${this.campaign.id}/faucet`, findParams, null, "GET") as Record<string, any>)[0];
+    const faucet = (await this.client.fetch(`campaigns/${this.campaign.id}/faucet`, findParams, null, "GET") as Faucet[])[0];
 
     // TODO determine unlimited claims properly
     const dispenser = new Dispenser({client: this.client, campaign: this.campaign, id: faucet['id'], urlSlug: faucet['url_slug'], useCaptcha: faucet['recaptcha'], useFingerprint: faucet['fingerprint'], unlimitedClaims: false, active: faucet['active']});
@@ -446,10 +491,10 @@ class DispenserActions extends TipLinkApi {
       ...params,
     }
 
-    const faucets = (await this.client.fetch(`campaigns/${this.campaign.id}/faucet`, filterParams, null, "GET") as Record<string, any>);
+    const faucets = (await this.client.fetch(`campaigns/${this.campaign.id}/faucet`, filterParams, null, "GET") as Faucet[]);
 
     // TODO determine unlimited claims properly
-    const dispensers = faucets.map((faucet: Record<string, any>) => {
+    const dispensers = faucets.map((faucet: Faucet) => {
       const dispenser = new Dispenser({client: this.client, campaign: this.campaign, id: faucet['id'], urlSlug: faucet['url_slug'], useCaptcha: faucet['recaptcha'], useFingerprint: faucet['fingerprint'], unlimitedClaims: false, active: faucet['active']});
       return dispenser;
     });
@@ -496,7 +541,7 @@ export class Dispenser extends TipLinkApi {
 
   private getUrl(): URL {
     if(typeof(this.campaign.encryptionKey) == "undefined") {
-      throw "invalid dispenser no decryption key availible";
+      throw "invalid dispenser no decryption key available";
     }
     const urlString = `${URL_BASE}/f/${this.campaign.id}-${this.urlSlug}#${this.campaign.encryptionKey}`;
     return new URL(urlString);
@@ -530,7 +575,7 @@ export class Dispenser extends TipLinkApi {
     return this.url;
   }
   public async delete(): Promise<boolean> {
-    const faucet = await this.client.fetch(`campaigns/${this.campaign.id}/faucet/${this.id}`, null, null, "DELETE");
+    await this.client.fetch(`campaigns/${this.campaign.id}/faucet/${this.id}`, null, null, "DELETE");
     return true;
   }
 }
