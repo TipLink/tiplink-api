@@ -5,7 +5,7 @@ import { generateRandomSalt, generateKey, encrypt, encryptPublicKey, decrypt } f
 
 export { decrypt };
 
-const URL_BASE = "https://tiplink.io/";
+const URL_BASE = "https://tiplink.io";
 // const URL_BASE = "http://localhost:3000";
 const API_URL_BASE = `${URL_BASE}/api`;
 
@@ -63,6 +63,7 @@ export class TipLinkClient {
       params.body = JSON.stringify(body);
     }
 
+    console.log(url.toString(), params);
     try {
       const result = await fetch(url.toString(), params);
       return await result.json();
@@ -436,7 +437,7 @@ class DispenserActions extends TipLinkApi {
     const rateLimits = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits`);
 
     await Promise.all(rateLimits.map(async (rateLimit: RateLimit) => {
-      const deleteRateLimitRes = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits/${rateLimit['id']}`);
+      const deleteRateLimitRes = await this.client.fetch(`campaigns/${this.campaign.id}/rate_limits/${rateLimit['id']}`, null, null, "DELETE");
       return deleteRateLimitRes;
     }));
 
