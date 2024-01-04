@@ -1,17 +1,21 @@
 import { Keypair } from '@solana/web3.js';
-import _sodium from "libsodium-wrappers-sumo";
-import { encode as b58encode, decode as b58decode } from "bs58";
+import _sodium from 'libsodium-wrappers-sumo';
+import { encode as b58encode, decode as b58decode } from 'bs58';
 
 const DEFAULT_TIPLINK_KEYLENGTH = 12;
-const TIPLINK_ORIGIN = "https://tiplink.io";
-const TIPLINK_PATH = "/i"
+const TIPLINK_ORIGIN = 'https://tiplink.io';
+const TIPLINK_PATH = '/i';
 
 const getSodium = async () => {
   await _sodium.ready;
   return _sodium;
-}
+};
 
-const kdf = async (fullLength: number, pwShort: Uint8Array, salt: Uint8Array) => {
+const kdf = async (
+  fullLength: number,
+  pwShort: Uint8Array,
+  salt: Uint8Array
+) => {
   const sodium = await getSodium();
   return sodium.crypto_pwhash(
     fullLength,
@@ -37,8 +41,8 @@ const kdfz = async (fullLength: number, pwShort: Uint8Array) => {
 const pwToKeypair = async (pw: Uint8Array) => {
   const sodium = await getSodium();
   const seed = await kdfz(sodium.crypto_sign_SEEDBYTES, pw);
-  return(Keypair.fromSeed(seed));
-}
+  return Keypair.fromSeed(seed);
+};
 
 export class TipLink {
   url: URL;
@@ -56,7 +60,7 @@ export class TipLink {
     const hash = b58encode(b);
     const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${hash}`;
     // can't assign hash as it causes an error in React Native
-    const link = new URL(urlString)
+    const link = new URL(urlString);
     const tiplink = new TipLink(link, keypair);
     return tiplink;
   }
@@ -75,9 +79,12 @@ export class TipLink {
   }
 
   // public getLink(): string {
-    // return this.url.toString();
+  // return this.url.toString();
   // }
 }
 
 import { TipLinkClient } from './client';
 export { TipLinkClient };
+
+import { EscrowTipLink } from './escrow';
+export { EscrowTipLink };
