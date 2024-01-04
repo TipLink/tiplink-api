@@ -69,7 +69,7 @@ export class TipLink {
       const b = await randBuf(DEFAULT_HASHLESS_TIPLINK_KEYLENGTH);
       const keypair = await pwToKeypairV1(b);
       const hash = b58encode(b);
-      const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${version}${VERSION_DELIMITER}${hash}`;
+      const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${VERSION_DELIMITER}${hash}`;
       // can't assign hash as it causes an error in React Native
       const link = new URL(urlString)
       const tiplink = new TipLink(link, keypair);
@@ -90,7 +90,12 @@ export class TipLink {
     let slug = url.hash.slice(1);
     let version = 0;
     if (slug.includes(VERSION_DELIMITER)) {
-      version = Number(slug.split(VERSION_DELIMITER, 1)[0]);
+      const versionString = slug.split(VERSION_DELIMITER, 1)[0];
+      if (versionString.length === 0) {
+        version = 1;
+      // } else {
+        // version = Number(versionString);
+      }
       slug = slug.split(VERSION_DELIMITER).slice(1).join(VERSION_DELIMITER);
     }
     const pw = Uint8Array.from(b58decode(slug));
