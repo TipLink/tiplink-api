@@ -9,7 +9,7 @@ import { ENCLAVE_ENDPOINT } from './constants';
  * @returns {Promise<PublicKey>} A promise that resolves to the PublicKey of the generated tiplink.
  * @throws {Error} Throws an error if the HTTPS request fails with a non-ok status.
  */
-export async function createGeneratedTiplink(
+export async function createGeneratedTipLink(
   email: string
 ): Promise<PublicKey> {
   const endpoint = `${ENCLAVE_ENDPOINT}/api/v1/generated-tiplinks/create`;
@@ -43,7 +43,7 @@ export async function createGeneratedTiplink(
  * @returns {Promise<string>} A promise that resolves to the email address associated with the provided TipLink public key.
  * @throws {Error} Throws an error if the HTTPS request fails with a non-ok status.
  */
-export async function getGeneratedTiplinkEmail(
+export async function getGeneratedTipLinkEmail(
   publicKey: PublicKey
 ): Promise<string> {
   const endpoint = `${ENCLAVE_ENDPOINT}/api/v1/generated-tiplinks/${publicKey.toString()}/email`;
@@ -70,9 +70,9 @@ export async function getGeneratedTiplinkEmail(
  * @param {string} toEmail - The email address of the recipient.
  * @param {PublicKey} tiplinkPublicKey - The public key of the TipLink to be sent.
  * @param {URL} depositUrl - The deposit URL which includes the PDA. TODO: Just send the PDA.
- *  * @param {string} [toName] - Optional name of the recipient for the email.
- * @param {string} replyEmail - Optional email address for the recipient to reply to. TODO: Remove this.
- * @param {string} [replyName] - Optional name of the sender for the email. TODO: Remove this.
+ * @param {string} [toName] - Optional name of the recipient for the email.
+ * @param {string} replyEmail - Optional email address for the recipient to reply to.
+ * @param {string} [replyName] - Optional name of the sender for the email.
  * @returns {Promise<void>} A promise that resolves when the email has been sent.
  * @throws {Error} Throws an error if the HTTP request fails with a non-ok status.
  */

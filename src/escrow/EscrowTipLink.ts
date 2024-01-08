@@ -10,8 +10,8 @@ import {
   DEPOSIT_URL_BASE,
 } from './constants';
 import {
-  createGeneratedTiplink,
-  getGeneratedTiplinkEmail,
+  createGeneratedTipLink,
+  getGeneratedTipLinkEmail,
   mailEscrowTipLink,
 } from './enclave';
 
@@ -71,7 +71,7 @@ export class EscrowTipLink {
     depositor: PublicKey,
     mint?: Mint
   ): Promise<EscrowTipLink> {
-    const tiplink = await createGeneratedTiplink(toEmail);
+    const tiplink = await createGeneratedTipLink(toEmail);
     return new EscrowTipLink(
       toEmail,
       tiplink,
@@ -115,7 +115,7 @@ export class EscrowTipLink {
     }
 
     const tiplinkPublicKey = pdaAccount.tiplink;
-    const email = await getGeneratedTiplinkEmail(tiplinkPublicKey);
+    const email = await getGeneratedTipLinkEmail(tiplinkPublicKey);
 
     return new EscrowTipLink(
       email,
@@ -137,7 +137,7 @@ export class EscrowTipLink {
       .accounts({
         depositor: this.depositor,
         pda,
-        treasury: TREASURY_PUBLIC_KEY_DEVNET,
+        treasury: TREASURY_PUBLIC_KEY_DEVNET, // TODO: Switch to mainnet address
         tiplink: this.tiplinkPublicKey,
       })
       .transaction();
@@ -174,7 +174,7 @@ export class EscrowTipLink {
         pda,
         pdaAta,
         tiplink: this.tiplinkPublicKey,
-        treasury: TREASURY_PUBLIC_KEY_DEVNET,
+        treasury: TREASURY_PUBLIC_KEY_DEVNET, // TODO: Switch to mainnet address
         mint: this.mint.address,
       })
       .transaction();

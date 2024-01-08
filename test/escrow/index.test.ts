@@ -10,6 +10,9 @@ import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { EscrowTipLink } from '../../src';
 import { getDepositorKeypair, getConnection, getUsdcMint } from './helpers';
 
+export const onchainTest =
+  process.env.ONCHAIN_TESTS === 'true' ? test : test.skip;
+
 let lamportEscrowTipLink: EscrowTipLink;
 let lamportPda: PublicKey;
 
@@ -34,21 +37,25 @@ test('Creates lamport EscrowTipLink', async () => {
   expect(lamportEscrowTipLink.tiplinkPublicKey).toBeInstanceOf(PublicKey);
 });
 
-test('Deposits lamport EscrowTipLink', async () => {
-  const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
-  const connection = getConnection();
+onchainTest(
+  'Deposits lamport EscrowTipLink',
+  async () => {
+    const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
+    const connection = getConnection();
 
-  const tx = await lamportEscrowTipLink.depositTx(connection);
-  await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
+    const tx = await lamportEscrowTipLink.depositTx(connection);
+    await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
 
-  // Check
-  expect(lamportEscrowTipLink.pda).toBeDefined();
-  lamportPda = lamportEscrowTipLink.pda as PublicKey;
-  expect(lamportPda).toBeInstanceOf(PublicKey);
-  expect(lamportEscrowTipLink.depositUrl).toBeInstanceOf(URL);
-}, 50000); // Increase timeout for tx confirmation
+    // Check
+    expect(lamportEscrowTipLink.pda).toBeDefined();
+    lamportPda = lamportEscrowTipLink.pda as PublicKey;
+    expect(lamportPda).toBeInstanceOf(PublicKey);
+    expect(lamportEscrowTipLink.depositUrl).toBeInstanceOf(URL);
+  },
+  50000
+); // Increase timeout for tx confirmation
 
-test('Gets lamport EscrowTipLink', async () => {
+onchainTest('Gets lamport EscrowTipLink', async () => {
   const connection = getConnection();
 
   if (!lamportPda) {
@@ -66,33 +73,37 @@ test('Gets lamport EscrowTipLink', async () => {
   expect(retrievedEscrowTipLink).toStrictEqual(lamportEscrowTipLink);
 });
 
-test('Withdraws lamport EscrowTipLink with depositor', async () => {
-  const connection = getConnection();
-  const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
+onchainTest(
+  'Withdraws lamport EscrowTipLink with depositor',
+  async () => {
+    const connection = getConnection();
+    const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
 
-  const depositorStartBalance = await connection.getBalance(
-    depositorKeypair.publicKey
-  );
+    const depositorStartBalance = await connection.getBalance(
+      depositorKeypair.publicKey
+    );
 
-  const tx = await lamportEscrowTipLink.withdrawTx(
-    connection,
-    depositorKeypair.publicKey,
-    depositorKeypair.publicKey
-  );
-  await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
+    const tx = await lamportEscrowTipLink.withdrawTx(
+      connection,
+      depositorKeypair.publicKey,
+      depositorKeypair.publicKey
+    );
+    await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
 
-  const depositorEndBalance = await connection.getBalance(
-    depositorKeypair.publicKey
-  );
+    const depositorEndBalance = await connection.getBalance(
+      depositorKeypair.publicKey
+    );
 
-  // Check
-  expect(depositorEndBalance).toBeGreaterThan(depositorStartBalance); // Exact amounts are unit tested in the program repo
-  const retrievedEscrowTipLink = await EscrowTipLink.get(
-    connection,
-    lamportPda
-  );
-  expect(retrievedEscrowTipLink).toBeUndefined();
-}, 50000); // Increase timeout for tx confirmation
+    // Check
+    expect(depositorEndBalance).toBeGreaterThan(depositorStartBalance); // Exact amounts are unit tested in the program repo
+    const retrievedEscrowTipLink = await EscrowTipLink.get(
+      connection,
+      lamportPda
+    );
+    expect(retrievedEscrowTipLink).toBeUndefined();
+  },
+  50000
+); // Increase timeout for tx confirmation
 
 test('Creates SPL EscrowTipLink', async () => {
   const usdcMint = await getUsdcMint();
@@ -116,24 +127,28 @@ test('Creates SPL EscrowTipLink', async () => {
   expect(splEscrowTipLink.tiplinkPublicKey).toBeInstanceOf(PublicKey);
 });
 
-test('Deposits SPL EscrowTipLink', async () => {
-  const connection = getConnection();
-  const depositorKeypair = await getDepositorKeypair(
-    0.1 * LAMPORTS_PER_SOL,
-    splEscrowTipLink.amount
-  );
+onchainTest(
+  'Deposits SPL EscrowTipLink',
+  async () => {
+    const connection = getConnection();
+    const depositorKeypair = await getDepositorKeypair(
+      0.1 * LAMPORTS_PER_SOL,
+      splEscrowTipLink.amount
+    );
 
-  const tx = await splEscrowTipLink.depositTx(connection);
-  await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
+    const tx = await splEscrowTipLink.depositTx(connection);
+    await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
 
-  // Check
-  expect(splEscrowTipLink.pda).toBeDefined();
-  splPda = splEscrowTipLink.pda as PublicKey;
-  expect(splPda).toBeInstanceOf(PublicKey);
-  expect(splEscrowTipLink.depositUrl).toBeInstanceOf(URL);
-}, 50000); // Increase timeout for tx confirmation
+    // Check
+    expect(splEscrowTipLink.pda).toBeDefined();
+    splPda = splEscrowTipLink.pda as PublicKey;
+    expect(splPda).toBeInstanceOf(PublicKey);
+    expect(splEscrowTipLink.depositUrl).toBeInstanceOf(URL);
+  },
+  50000
+); // Increase timeout for tx confirmation
 
-test('Gets SPL EscrowTipLink', async () => {
+onchainTest('Gets SPL EscrowTipLink', async () => {
   const connection = getConnection();
 
   if (!splPda) {
@@ -148,34 +163,38 @@ test('Gets SPL EscrowTipLink', async () => {
   expect(retrievedEscrowTipLink).toStrictEqual(splEscrowTipLink);
 });
 
-test('Withdraws SPL EscrowTipLink with depositor', async () => {
-  const connection = getConnection();
-  const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
-  const usdcMint = await getUsdcMint();
+onchainTest(
+  'Withdraws SPL EscrowTipLink with depositor',
+  async () => {
+    const connection = getConnection();
+    const depositorKeypair = await getDepositorKeypair(0.1 * LAMPORTS_PER_SOL);
+    const usdcMint = await getUsdcMint();
 
-  const depositorAta = await getAssociatedTokenAddress(
-    usdcMint.address,
-    depositorKeypair.publicKey
-  );
-  const depositorAtaStartBalance = await connection.getTokenAccountBalance(
-    depositorAta
-  );
+    const depositorAta = await getAssociatedTokenAddress(
+      usdcMint.address,
+      depositorKeypair.publicKey
+    );
+    const depositorAtaStartBalance = await connection.getTokenAccountBalance(
+      depositorAta
+    );
 
-  const tx = await splEscrowTipLink.withdrawTx(
-    connection,
-    depositorKeypair.publicKey,
-    depositorKeypair.publicKey
-  );
-  await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
+    const tx = await splEscrowTipLink.withdrawTx(
+      connection,
+      depositorKeypair.publicKey,
+      depositorKeypair.publicKey
+    );
+    await sendAndConfirmTransaction(connection, tx, [depositorKeypair]);
 
-  const depositorAtaEndBalance = await connection.getTokenAccountBalance(
-    depositorAta
-  );
+    const depositorAtaEndBalance = await connection.getTokenAccountBalance(
+      depositorAta
+    );
 
-  // Check
-  expect(parseInt(depositorAtaEndBalance.value.amount)).toBeGreaterThan(
-    parseInt(depositorAtaStartBalance.value.amount)
-  ); // Exact amounts are unit tested in the program repo
-  const retrievedEscrowTipLink = await EscrowTipLink.get(connection, splPda);
-  expect(retrievedEscrowTipLink).toBeUndefined();
-}, 50000); // Increase timeout for tx confirmation
+    // Check
+    expect(parseInt(depositorAtaEndBalance.value.amount)).toBeGreaterThan(
+      parseInt(depositorAtaStartBalance.value.amount)
+    ); // Exact amounts are unit tested in the program repo
+    const retrievedEscrowTipLink = await EscrowTipLink.get(connection, splPda);
+    expect(retrievedEscrowTipLink).toBeUndefined();
+  },
+  50000
+); // Increase timeout for tx confirmation

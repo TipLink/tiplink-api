@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "test:include-onchain-tests": "ONCHAIN_TESTS=true jest",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "prepare": "npm run build",
