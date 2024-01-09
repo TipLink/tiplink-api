@@ -63,7 +63,6 @@ export class TipLinkClient {
       params.body = JSON.stringify(body);
     }
 
-    console.log(url.toString(), params);
     try {
       const result = await fetch(url.toString(), params);
       return await result.json();
@@ -129,10 +128,10 @@ interface CampaignEntry {
 }
 
 interface AnalyticsSummary {
-  event_type_counts: number;
+  event_type_counts: Record<string, number>[];
   total: number;
-  faucets_info: number;
-  campaign_info: number;
+  faucets_info: Record<string, number>[];
+  campaign_info: Record<string, number>[];
 }
 
 enum Rate {
@@ -374,6 +373,7 @@ export class Campaign extends TipLinkApi {
     // TODO include analytics? and id give whole entry object?
     return entries;
   }
+
   public async getAnalytics(): Promise<AnalyticsSummary> {
     // TODO clean up response here and type
     const analyticsRes = await this.client.fetch(`campaigns/${this.id}/analytics_summary`);
