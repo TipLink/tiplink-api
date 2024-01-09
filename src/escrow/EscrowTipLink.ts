@@ -9,11 +9,7 @@ import {
   PDA_SEED,
   DEPOSIT_URL_BASE,
 } from './constants';
-import {
-  createGeneratedTipLink,
-  getGeneratedTipLinkEmail,
-  mailEscrowTipLink,
-} from './enclave';
+import { createGeneratedTipLink, getGeneratedTipLinkEmail } from '../enclave';
 
 /**
  * Represents an on-chain escrow that can be withdrawn by the original depositor or a TipLink, e-mailed to a recipient.
@@ -280,25 +276,5 @@ export class EscrowTipLink {
       return this.withdrawSplTx(tiplinkEscrowProgram, authority, dest);
     }
     return this.withdrawLamportTx(tiplinkEscrowProgram, authority, dest);
-  }
-
-  async mail(
-    toName?: string,
-    replyEmail?: string,
-    replyName?: string
-  ): Promise<void> {
-    // Sanity checks; error checking occurs in the enclave and on-chain program
-    if (!this.pda) {
-      throw new Error('Escrow TipLink has not been deposited');
-    }
-
-    await mailEscrowTipLink(
-      this.toEmail,
-      this.tiplinkPublicKey,
-      this.depositUrl,
-      replyEmail,
-      toName,
-      replyName
-    );
   }
 }

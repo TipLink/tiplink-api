@@ -1,7 +1,5 @@
 import { PublicKey } from '@solana/web3.js';
 
-export const ENCLAVE_ENDPOINT = 'https://mailer.tiplink.io';
-
 export const ESCROW_PROGRAM_ID = new PublicKey(
   '8TqqugH88U3fDEWeKHqBSxZKeqoRrXkdpy3ciX5GAruK'
 );

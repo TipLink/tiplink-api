@@ -88,3 +88,6 @@ export { TipLinkClient };
 
 import { EscrowTipLink } from './escrow';
 export { EscrowTipLink };
+
+import { mail, mailEscrow } from './enclave';
+export { mail, mailEscrow };
