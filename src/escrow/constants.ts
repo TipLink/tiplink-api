@@ -4,8 +4,8 @@ export const ESCROW_PROGRAM_ID = new PublicKey(
   '8TqqugH88U3fDEWeKHqBSxZKeqoRrXkdpy3ciX5GAruK'
 );
 
-export const TREASURY_PUBLIC_KEY_DEVNET = new PublicKey(
-  'GUua2QL7guU2RjQJXyZt6ePHVWrhEW5PcRcuU1t2mmQF'
+export const TREASURY_PUBLIC_KEY = new PublicKey(
+  'BGZMcTjyTCbkRszC1CBpFpP9CbVh3Ah2ZhjzCsc9PsAr'
 );
 
 export const PDA_SEED = 'escrow';

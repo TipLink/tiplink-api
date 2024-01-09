@@ -5,7 +5,7 @@ import { Program, BN } from '@coral-xyz/anchor';
 import { IDL, TiplinkEscrow } from './anchor-generated/types/tiplink_escrow';
 import {
   ESCROW_PROGRAM_ID,
-  TREASURY_PUBLIC_KEY_DEVNET,
+  TREASURY_PUBLIC_KEY,
   PDA_SEED,
   DEPOSIT_URL_BASE,
 } from './constants';
@@ -133,7 +133,7 @@ export class EscrowTipLink {
       .accounts({
         depositor: this.depositor,
         pda,
-        treasury: TREASURY_PUBLIC_KEY_DEVNET, // TODO: Switch to mainnet address
+        treasury: TREASURY_PUBLIC_KEY, // TODO: Switch to mainnet address
         tiplink: this.tiplinkPublicKey,
       })
       .transaction();
@@ -170,7 +170,7 @@ export class EscrowTipLink {
         pda,
         pdaAta,
         tiplink: this.tiplinkPublicKey,
-        treasury: TREASURY_PUBLIC_KEY_DEVNET, // TODO: Switch to mainnet address
+        treasury: TREASURY_PUBLIC_KEY, // TODO: Switch to mainnet address
         mint: this.mint.address,
       })
       .transaction();

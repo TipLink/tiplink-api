@@ -19,6 +19,17 @@ let lamportPda: PublicKey;
 let splEscrowTipLink: EscrowTipLink;
 let splPda: PublicKey;
 
+beforeEach((done) => {
+  if (process.env.ONCHAIN_TESTS === 'true') {
+    // Sleep 3 seconds to avoid RPC throttling
+    setTimeout(() => {
+      done();
+    }, 3000);
+  } else {
+    done();
+  }
+});
+
 test('Creates lamport EscrowTipLink', async () => {
   const amount = 20000;
   const recipient = 'example@email.com';
