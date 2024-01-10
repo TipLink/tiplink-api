@@ -3,8 +3,13 @@ import _sodium from 'libsodium-wrappers-sumo';
 import { encode as b58encode, decode as b58decode } from 'bs58';
 
 const DEFAULT_TIPLINK_KEYLENGTH = 12;
-const TIPLINK_ORIGIN = 'https://tiplink.io';
-const TIPLINK_PATH = '/i';
+const DEFAULT_HASHLESS_TIPLINK_KEYLENGTH = 16; // 16 bytes = 128 bits
+const TIPLINK_ORIGIN = "https://tiplink.io";
+const TIPLINK_PATH = "/i"
+
+const VERSION_DELIMITER = "_";
+
+const VALID_VERSIONS = new Set([0, 1]);
 
 const getSodium = async () => {
   await _sodium.ready;
@@ -44,6 +49,12 @@ const pwToKeypair = async (pw: Uint8Array) => {
   return Keypair.fromSeed(seed);
 };
 
+const pwToKeypairV1 = async (pw: Uint8Array) => {
+  const sodium = await getSodium();
+  const seed = sodium.pad(pw, sodium.crypto_sign_SEEDBYTES);
+  return(Keypair.fromSeed(seed));
+}
+
 export class TipLink {
   url: URL;
   keypair: Keypair;
@@ -53,24 +64,54 @@ export class TipLink {
     this.keypair = keypair;
   }
 
-  public static async create(): Promise<TipLink> {
+  public static async create(version = 0): Promise<TipLink> {
+    if (!VALID_VERSIONS.has(version)) {
+      throw Error("invalid version");
+    }
     await getSodium();
-    const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
-    const keypair = await pwToKeypair(b);
-    const hash = b58encode(b);
-    const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${hash}`;
-    // can't assign hash as it causes an error in React Native
-    const link = new URL(urlString);
-    const tiplink = new TipLink(link, keypair);
-    return tiplink;
+    if (version === 1) {
+      const b = await randBuf(DEFAULT_HASHLESS_TIPLINK_KEYLENGTH);
+      const keypair = await pwToKeypairV1(b);
+      const hash = b58encode(b);
+      const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${VERSION_DELIMITER}${hash}`;
+      // can't assign hash as it causes an error in React Native
+      const link = new URL(urlString)
+      const tiplink = new TipLink(link, keypair);
+      return tiplink;
+    } else { // version === 0
+      const b = await randBuf(DEFAULT_TIPLINK_KEYLENGTH);
+      const keypair = await pwToKeypair(b);
+      const hash = b58encode(b);
+      const urlString = `${TIPLINK_ORIGIN}${TIPLINK_PATH}#${hash}`;
+      // can't assign hash as it causes an error in React Native
+      const link = new URL(urlString)
+      const tiplink = new TipLink(link, keypair);
+      return tiplink;
+    }
   }
 
   public static async fromUrl(url: URL): Promise<TipLink> {
-    const slug = url.hash.slice(1);
+    let slug = url.hash.slice(1);
+    let version = 0;
+    if (slug.includes(VERSION_DELIMITER)) {
+      const versionString = slug.split(VERSION_DELIMITER, 1)[0];
+      if (versionString.length === 0) {
+        version = 1;
+      // } else {
+        // version = Number(versionString);
+      }
+      slug = slug.split(VERSION_DELIMITER).slice(1).join(VERSION_DELIMITER);
+    }
     const pw = Uint8Array.from(b58decode(slug));
-    const keypair = await pwToKeypair(pw);
-    const tiplink = new TipLink(url, keypair);
-    return tiplink;
+    if (version === 1) {
+      const keypair = await pwToKeypairV1(pw);
+      const tiplink = new TipLink(url, keypair);
+      return tiplink;
+    } else {
+      const keypair = await pwToKeypair(pw);
+      const tiplink = new TipLink(url, keypair);
+      return tiplink;
+    }
   }
 
   public static async fromLink(link: string): Promise<TipLink> {
