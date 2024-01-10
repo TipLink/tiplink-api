@@ -60,7 +60,7 @@ export class TipLink {
     this.keypair = keypair;
   }
 
-  public static async create(version:number = 0): Promise<TipLink> {
+  public static async create(version = 0): Promise<TipLink> {
     if (!VALID_VERSIONS.has(version)) {
       throw Error("invalid version");
     }

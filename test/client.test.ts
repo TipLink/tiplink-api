@@ -4,8 +4,10 @@ import { TipLinkClient } from "../src";
 const API_KEY = process.env["API_KEY"] || "";
 const TEST_VERSION = 1;
 
-
 test("Create Valid Client", async () => {
+  if(!API_KEY) {
+    return;
+  }
   const client = await TipLinkClient.init(API_KEY, TEST_VERSION);
   expect(client.apiKey).toBe(API_KEY);
   expect(client.version).toBe(TEST_VERSION);
@@ -13,6 +15,9 @@ test("Create Valid Client", async () => {
 })
 
 test("Create Campaign", async () => {
+  if(!API_KEY) {
+    return;
+  }
   const TEST_CAMPAIGN_NAME = "Test Campaign (from jest)";
   const TEST_CAMPAIGN_DESCRIPTION = "Test description";
   const client = await TipLinkClient.init(API_KEY, TEST_VERSION);
@@ -26,6 +31,9 @@ test("Create Campaign", async () => {
 
 
 test("Create Campaign with Entries", async () => {
+  if(!API_KEY) {
+    return;
+  }
   const TEST_CAMPAIGN_NAME = "Test Campaign (from jest)";
   const TEST_CAMPAIGN_DESCRIPTION = "Test description";
   const client = await TipLinkClient.init(API_KEY, TEST_VERSION);
@@ -40,6 +48,9 @@ test("Create Campaign with Entries", async () => {
 });
 
 test("Campaign Basic Analytics", async () => {
+  if(!API_KEY) {
+    return;
+  }
   const TEST_CAMPAIGN_NAME = "Test Campaign (from jest)";
   const TEST_CAMPAIGN_DESCRIPTION = "Test description";
   const client = await TipLinkClient.init(API_KEY, TEST_VERSION);
@@ -54,7 +65,7 @@ test("Campaign Basic Analytics", async () => {
   const initial_analytics = await campaign.getAnalytics();
 
   expect(initial_analytics.total).toBe(2);
-  expect(initial_analytics.event_type_counts.length).toBe(1);;
+  expect(initial_analytics.event_type_counts.length).toBe(1);
   expect(initial_analytics.event_type_counts[0]["event_type"]).toBe("CREATED");
   expect(initial_analytics.event_type_counts[0]["count"]).toBe("2");
 
@@ -76,12 +87,12 @@ test("Campaign Basic Analytics", async () => {
     },
   ];
 
-  const analytics_resp = await client.fetch("analytics", null, analytics_payload, "POST");
+  await client.fetch("analytics", null, analytics_payload, "POST");
 
   const adjust_analytics = await campaign.getAnalytics();
 
   expect(adjust_analytics.total).toBe(2);
-  expect(adjust_analytics.event_type_counts.length).toBe(3);;
+  expect(adjust_analytics.event_type_counts.length).toBe(3);
   expect(adjust_analytics.event_type_counts[0]["event_type"]).toBe("CREATED");
   expect(adjust_analytics.event_type_counts[0]["count"]).toBe("2");
   expect(adjust_analytics.event_type_counts[1]["event_type"]).toBe("ACCESSED");
@@ -91,6 +102,9 @@ test("Campaign Basic Analytics", async () => {
 })
 
 test("Create Dispenser for Campaign", async () => {
+  if(!API_KEY) {
+    return;
+  }
   const TEST_CAMPAIGN_NAME = "Test Campaign (from jest)";
   const TEST_CAMPAIGN_DESCRIPTION = "Test description";
   const client = await TipLinkClient.init(API_KEY, TEST_VERSION);
