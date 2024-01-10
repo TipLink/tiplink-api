@@ -30,7 +30,7 @@ beforeEach((done) => {
   }
 });
 
-test('Creates lamport EscrowTipLink', async () => {
+onchainTest('Creates lamport EscrowTipLink', async () => {
   const amount = 20000;
   const recipient = 'example@email.com';
   const depositor = (await getDepositorKeypair()).publicKey;
@@ -116,7 +116,7 @@ onchainTest(
   50000
 ); // Increase timeout for tx confirmation
 
-test('Creates SPL EscrowTipLink', async () => {
+onchainTest('Creates SPL EscrowTipLink', async () => {
   const usdcMint = await getUsdcMint();
 
   const amount = 1;
