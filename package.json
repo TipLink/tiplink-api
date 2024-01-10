@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "test:include-onchain-tests": "ONCHAIN_TESTS=true jest",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "prepare": "npm run build",
@@ -14,6 +15,8 @@
   "author": "Aashiq Dheeraj",
   "license": "LicenseRef-LICENSE",
   "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/spl-token": "^0.3.10",
     "@solana/web3.js": "^1.48.0",
     "bs58": "^5.0.0",
     "libsodium": "^0.7.11",
@@ -29,6 +32,8 @@
     "@types/sodium-native": "^2.3.5",
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
+    "bip39": "^3.1.0",
+    "dotenv": "^16.3.1",
     "@typescript-eslint/typescript-estree": "^6.18.1",
     "eslint": "^8.19.0",
     "jest": "^28.1.3",

@@ -1,6 +1,6 @@
 import { Keypair } from '@solana/web3.js';
-import _sodium from "libsodium-wrappers-sumo";
-import { encode as b58encode, decode as b58decode } from "bs58";
+import _sodium from 'libsodium-wrappers-sumo';
+import { encode as b58encode, decode as b58decode } from 'bs58';
 
 const DEFAULT_TIPLINK_KEYLENGTH = 12;
 const DEFAULT_HASHLESS_TIPLINK_KEYLENGTH = 16; // 16 bytes = 128 bits
@@ -16,7 +16,11 @@ const getSodium = async () => {
   return _sodium;
 };
 
-const kdf = async (fullLength: number, pwShort: Uint8Array, salt: Uint8Array) => {
+const kdf = async (
+  fullLength: number,
+  pwShort: Uint8Array,
+  salt: Uint8Array
+) => {
   const sodium = await getSodium();
   return sodium.crypto_pwhash(
     fullLength,
@@ -42,8 +46,8 @@ const kdfz = async (fullLength: number, pwShort: Uint8Array) => {
 const pwToKeypair = async (pw: Uint8Array) => {
   const sodium = await getSodium();
   const seed = await kdfz(sodium.crypto_sign_SEEDBYTES, pw);
-  return(Keypair.fromSeed(seed));
-}
+  return Keypair.fromSeed(seed);
+};
 
 const pwToKeypairV1 = async (pw: Uint8Array) => {
   const sodium = await getSodium();
@@ -116,9 +120,15 @@ export class TipLink {
   }
 
   // public getLink(): string {
-    // return this.url.toString();
+  // return this.url.toString();
   // }
 }
 
 import { TipLinkClient } from './client';
 export { TipLinkClient };
+
+import { EscrowTipLink } from './escrow';
+export { EscrowTipLink };
+
+import { mail, mailEscrow } from './enclave';
+export { mail, mailEscrow };
